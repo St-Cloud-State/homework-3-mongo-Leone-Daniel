@@ -1,4 +1,5 @@
 from pymongo import MongoClient
+from datetime import datetime
 
 client = MongoClient('mongodb://localhost:27017/')
 db = client['appDB']
@@ -7,7 +8,8 @@ applications = db['applications']
 def submit_application_to_db(data):
     next_id = applications.count_documents({}) + 1
     tracking_id = f"app_{next_id:05}"
-    
+    timestamp = datetime.utcnow().isoformat()
+
     application = {
         "tracking_id": tracking_id,
         "f_name": data.get('f_name'),
@@ -17,7 +19,7 @@ def submit_application_to_db(data):
         "state": data.get('state'),
         "zipcode": data.get('zipcode'),
         "status": "received",
-        "general_notes": [],
+        "general_notes": [f"Application initiated at {timestamp}"],
         "processing": {
             "personal_details_check": [],
             "credit_check": [],
@@ -26,7 +28,7 @@ def submit_application_to_db(data):
         "acceptance_notes": [],
         "rejection_reason": None
     }
-    
+
     applications.insert_one(application)
     return tracking_id
 
@@ -34,6 +36,14 @@ def check_status_in_db(tracking_id):
     app = applications.find_one({"tracking_id": tracking_id})
     if not app:
         return {"status": "not found", "notes": []}
+
+    timestamp = datetime.utcnow().isoformat()
+    note = f"Status checked at {timestamp}"
+
+    applications.update_one(
+        {"tracking_id": tracking_id},
+        {"$push": {"general_notes": note}}
+    )
 
     notes = []
     notes.extend(app.get('general_notes', []))
@@ -58,9 +68,15 @@ def update_status_in_db(tracking_id, new_status):
     if new_status not in valid_statuses:
         return {"success": False, "message": f"Invalid status '{new_status}'"}, 400
 
+    timestamp = datetime.utcnow().isoformat()
+    note = f"Application updated to {new_status} at {timestamp}"
+
     result = applications.update_one(
         {"tracking_id": tracking_id},
-        {"$set": {"status": new_status}}
+        {
+            "$set": {"status": new_status},
+            "$push": {"general_notes": note}
+        }
     )
 
     if result.matched_count == 0:

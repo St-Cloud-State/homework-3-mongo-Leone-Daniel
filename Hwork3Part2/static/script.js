@@ -26,7 +26,7 @@ function submitApplication() {
     .then(response => response.json())
     .then(data => {
         const resultDiv = document.getElementById('applicationResult');
-        resultDiv.innerHTML = `✅ Application submitted! Your tracking ID is: <b>${data.tracking_id}</b>`;
+        resultDiv.innerHTML = `Application submitted! Your tracking ID is: <b>${data.tracking_id}</b>`;
         
         // Optionally clear the input fields
         document.getElementById('f_name').value = '';
