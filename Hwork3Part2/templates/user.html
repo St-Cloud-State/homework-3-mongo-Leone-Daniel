@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Applicant Portal</title>
+</head>
+<body>
+    <h1>Applicant Portal</h1>
+
+    <section id="submitApplicationSection">
+        <h2>Submit New Application</h2>
+        <input type="text" id="f_name" placeholder="First Name"><br>
+        <input type="text" id="l_name" placeholder="Last Name"><br>
+        <input type="text" id="address" placeholder="Address"><br>
+        <input type="text" id="city" placeholder="City"><br>
+        <input type="text" id="state" placeholder="State"><br>
+        <input type="text" id="zipcode" placeholder="Zipcode"><br>
+        <button onclick="submitApplication()">Submit Application</button>
+        <div id="applicationResult"></div>
+    </section>
+
+    <section id="checkStatusSection">
+        <h2>Check Application Status</h2>
+        <input type="text" id="statusTrackingId" placeholder="Enter Tracking ID">
+        <button onclick="checkStatus()">Check Status</button>
+        <div id="statusResult"></div>
+        <div id="notesResult"></div>
+    </section>
+
+    <button onclick="goHome()">Return to Home</button>
+
+    <script src="{{ url_for('static', filename='nav.js') }}"></script>
+    <script src="{{ url_for('static', filename='user.js') }}"></script>
+</body>
+</html>

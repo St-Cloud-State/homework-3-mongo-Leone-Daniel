@@ -1,72 +1,25 @@
-from flask import Flask, request, jsonify, render_template
-from db_methods import *
+from flask import Flask, render_template
+from routes.user_routes import user_routes
+from routes.staff_routes import staff_routes
 
 app = Flask(__name__)
 
+# Register Blueprints
+app.register_blueprint(user_routes, url_prefix='/api')
+app.register_blueprint(staff_routes, url_prefix='/api')
+
+# Frontend Routes
 @app.route('/')
 def home():
     return render_template('index.html')
 
-@app.route('/api/submit_application', methods=['POST'])
-def submit_application():
-    data = request.get_json()
-    tracking_id = submit_application_to_db(data)
-    return jsonify({"tracking_id": tracking_id})
+@app.route('/user')
+def user_portal():
+    return render_template('user.html')
 
-@app.route('/api/check_status/<tracking_id>', methods=['GET'])
-def check_status(tracking_id):
-    result = check_status_in_db(tracking_id)
-    return jsonify(result)
+@app.route('/staff')
+def staff_portal():
+    return render_template('staff.html')
 
-@app.route('/api/update_status', methods=['POST'])
-def update_status():
-    data = request.get_json()
-    tracking_id = data.get("tracking_id")
-    new_status = data.get("new_status")
-    rejection_reason = data.get("rejection_reason")  # Optional
-
-    if not tracking_id or not new_status:
-        return jsonify({"success": False, "message": "Missing tracking_id or new_status"}), 400
-
-    result, status_code = update_status_in_db(tracking_id, new_status, rejection_reason)
-    return jsonify(result), status_code
-
-@app.route('/api/add_acceptance_note', methods=['POST'])
-def add_acceptance_note_route():
-    data = request.get_json()
-    tracking_id = data.get("tracking_id")
-    message = data.get("message")
-
-    if not tracking_id or not message:
-        return jsonify({"success": False, "message": "Tracking ID and message required."}), 400
-
-    result, code = add_acceptance_note(tracking_id, message)
-    return jsonify(result), code
-
-@app.route('/api/add_general_note', methods=['POST'])
-def add_general_note_route():
-    data = request.get_json()
-    tracking_id = data.get("tracking_id")
-    message = data.get("message")
-
-    if not tracking_id or not message:
-        return jsonify({"success": False, "message": "Tracking ID and message required."}), 400
-
-    result, code = add_general_note(tracking_id, message)
-    return jsonify(result), code
-
-from db_methods import add_processing_note
-
-@app.route('/api/add_processing_note', methods=['POST'])
-def add_processing_note_route():
-    data = request.get_json()
-    tracking_id = data.get("tracking_id")
-    subphase = data.get("subphase")
-    message = data.get("message")
-    completed = data.get("completed", False)
-
-    if not tracking_id or not subphase or not message:
-        return jsonify({"success": False, "message": "Tracking ID, subphase, and message required."}), 400
-
-    result, code = add_processing_note(tracking_id, subphase, message, completed)
-    return jsonify(result), code
+if __name__ == '__main__':
+    app.run(debug=True)
