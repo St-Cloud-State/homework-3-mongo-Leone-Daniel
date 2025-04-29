@@ -3,85 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <title>Loan Staff Portal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='staff.css') }}">
 </head>
 <body>
     <h1>Loan Staff Portal</h1>
 
-    <section id="updateStatusSection">
-        <h2>Update Application Status</h2>
-        <input type="text" id="updateTrackingId" placeholder="Enter Tracking ID"><br>
+    <div id="mainContainer">
+        <!-- Left Panel: View Applications -->
+        <section id="viewApplicationsSection">
+            <h2>View Applications</h2>
+            <button onclick="loadApplications()">Refresh List</button>
+            <div id="applicationsList"></div>
+        </section>
 
-        <label for="newStatus">New Status:</label>
-        <select id="newStatus" onchange="toggleRejectionReason()">
-            <option value="received">Received</option>
-            <option value="processing">Processing</option>
-            <option value="accepted">Accepted</option>
-            <option value="rejected">Rejected</option>
-        </select><br>
+        <!-- Right Panel: All actions -->
+        <div id="actionSections">
+            <section id="updateStatusSection">
+                <h2>Update Application Status</h2>
+                <label for="newStatus">New Status:</label>
+                <select id="newStatus" onchange="toggleRejectionReason()">
+                    <option value="received">Received</option>
+                    <option value="processing">Processing</option>
+                    <option value="accepted">Accepted</option>
+                    <option value="rejected">Rejected</option>
+                </select><br>
 
-        <div id="rejectionReasonContainer" style="display: none;">
-            <label for="rejectionReason">Rejection Reason:</label>
-            <input type="text" id="rejectionReason" placeholder="Enter reason for rejection"><br>
+                <div id="rejectionReasonContainer" style="display: none;">
+                    <label for="rejectionReason">Rejection Reason:</label>
+                    <input type="text" id="rejectionReason" placeholder="Enter reason for rejection"><br>
+                </div>
+
+                <button onclick="updateStatus()">Update Status</button>
+                <div id="updateStatusResult"></div>
+            </section>
+
+            <section id="addGeneralNoteSection">
+                <h2>Add General Note</h2>
+                <textarea id="generalMessage" placeholder="Enter general note"></textarea><br>
+                <button onclick="submitGeneralNote()">Submit General Note</button>
+                <div id="generalNoteResult"></div>
+            </section>
+
+            <section id="addProcessingNoteSection">
+                <h2>Add Processing Note</h2>
+                <label for="processingSubphase">Select Subphase:</label>
+                <select id="processingSubphase">
+                    <option value="personal_details_check">Personal Details Check</option>
+                    <option value="credit_check">Credit Check</option>
+                    <option value="certification_check">Certification Check</option>
+                </select><br>
+
+                <textarea id="processingMessage" placeholder="Enter processing note"></textarea><br>
+
+                <label for="processingCompleted">Task Completed?</label>
+                <input type="checkbox" id="processingCompleted"><br>
+
+                <button onclick="submitProcessingNote()">Submit Processing Note</button>
+                <div id="processingNoteResult"></div>
+            </section>
+
+            <section id="addAcceptanceNoteSection">
+                <h2>Add Acceptance Note</h2>
+                <textarea id="acceptanceMessage" placeholder="Enter acceptance note"></textarea><br>
+                <button onclick="submitAcceptanceNote()">Submit Acceptance Note</button>
+                <div id="acceptanceNoteResult"></div>
+            </section>
+
+            <section id="deleteApplicationSection">
+                <h2>Delete Application</h2>
+                <button onclick="deleteApplication()">Delete Selected Application</button>
+                <div id="deleteResult"></div>
+            </section>
         </div>
+    </div>
 
-        <button onclick="updateStatus()">Update Status</button>
-        <div id="updateStatusResult"></div>
-    </section>
+    <div class="bottomBar">
+        <button onclick="goHome()">Return to Home</button>
+    </div>
 
-    <section id="addGeneralNoteSection">
-        <h2>Add General Note</h2>
-        <input type="text" id="generalTrackingId" placeholder="Enter Tracking ID"><br>
-        <textarea id="generalMessage" placeholder="Enter general note"></textarea><br>
-        <button onclick="submitGeneralNote()">Submit General Note</button>
-        <div id="generalNoteResult"></div>
-    </section>
-
-    <section id="addProcessingNoteSection">
-        <h2>Add Processing Note</h2>
-        <input type="text" id="processingTrackingId" placeholder="Enter Tracking ID"><br>
-
-        <label for="processingSubphase">Select Subphase:</label>
-        <select id="processingSubphase">
-            <option value="personal_details_check">Personal Details Check</option>
-            <option value="credit_check">Credit Check</option>
-            <option value="certification_check">Certification Check</option>
-        </select><br>
-
-        <textarea id="processingMessage" placeholder="Enter processing note"></textarea><br>
-
-        <label for="processingCompleted">Task Completed?</label>
-        <input type="checkbox" id="processingCompleted"><br>
-
-        <button onclick="submitProcessingNote()">Submit Processing Note</button>
-        <div id="processingNoteResult"></div>
-    </section>
-
-    <section id="addAcceptanceNoteSection">
-        <h2>Add Acceptance Note</h2>
-        <input type="text" id="acceptanceTrackingId" placeholder="Enter Tracking ID"><br>
-        <textarea id="acceptanceMessage" placeholder="Enter acceptance note"></textarea><br>
-        <button onclick="submitAcceptanceNote()">Submit Acceptance Note</button>
-        <div id="acceptanceNoteResult"></div>
-    </section>
-
-    <!-- View All Applications -->
-    <section id="viewApplicationsSection">
-        <h2>View Applications</h2>
-        <button onclick="loadApplications()">Refresh List</button>
-        <div id="applicationsList"></div>
-    </section>
-
-    <!-- Delete Application -->
-    <section id="deleteApplicationSection">
-        <h2>Delete Application</h2>
-        <input type="text" id="deleteTrackingId" placeholder="Enter Tracking ID to delete"><br>
-        <button onclick="deleteApplication()">Delete</button>
-        <div id="deleteResult"></div>
-    </section>
-
-    <button onclick="goHome()">Return to Home</button>
-
-    <script src="{{ url_for('static', filename='nav.js') }}"></script>
-    <script src="{{ url_for('static', filename='staff.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/staff.css') }}">
+    <script src="{{ url_for('static', filename='js/nav.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/staff.js') }}"></script>    
 </body>
 </html>

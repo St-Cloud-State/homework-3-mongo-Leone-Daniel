@@ -3,33 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <title>Applicant Portal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/user.css') }}">
 </head>
 <body>
     <h1>Applicant Portal</h1>
 
-    <section id="submitApplicationSection">
-        <h2>Submit New Application</h2>
-        <input type="text" id="f_name" placeholder="First Name"><br>
-        <input type="text" id="l_name" placeholder="Last Name"><br>
-        <input type="text" id="address" placeholder="Address"><br>
-        <input type="text" id="city" placeholder="City"><br>
-        <input type="text" id="state" placeholder="State"><br>
-        <input type="text" id="zipcode" placeholder="Zipcode"><br>
-        <button onclick="submitApplication()">Submit Application</button>
-        <div id="applicationResult"></div>
-    </section>
+    <div id="mainContainer">
+        <!-- Left Panel: Submit Application -->
+        <section id="submitApplicationSection">
+            <h2>Submit New Application</h2>
+            <input type="text" id="f_name" placeholder="First Name" required><br>
+            <input type="text" id="l_name" placeholder="Last Name" required><br>
+            <input type="text" id="address" placeholder="Address" required><br>
+            <input type="text" id="city" placeholder="City" required><br>
+            <input type="text" id="state" placeholder="State" required><br>
+            <input type="text" id="zipcode" placeholder="Zipcode" required><br>
+            <button onclick="submitApplication()">Submit Application</button>
+            <div id="applicationResult"></div>
+        </section>
 
-    <section id="checkStatusSection">
-        <h2>Check Application Status</h2>
-        <input type="text" id="statusTrackingId" placeholder="Enter Tracking ID">
-        <button onclick="checkStatus()">Check Status</button>
-        <div id="statusResult"></div>
-        <div id="notesResult"></div>
-    </section>
+        <!-- Right Panel: Check Status -->
+        <section id="checkStatusSection">
+            <h2>Check Application Status</h2>
+            <input type="text" id="statusTrackingId" placeholder="Enter Tracking ID">
+            <button onclick="checkStatus()">Check Status</button>
+            <div id="statusResult"></div>
+            <div id="notesResult"></div>
+        </section>
+    </div>
 
-    <button onclick="goHome()">Return to Home</button>
+    <div class="bottomBar">
+        <button onclick="goHome()">Return to Home</button>
+    </div>
 
-    <script src="{{ url_for('static', filename='nav.js') }}"></script>
-    <script src="{{ url_for('static', filename='user.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/nav.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/user.js') }}"></script>
 </body>
 </html>

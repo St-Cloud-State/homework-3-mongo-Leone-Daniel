@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Loan Application System - Home</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
 </head>
 <body>
     <h1>Welcome to Acme Financial Loan Portal</h1>
@@ -11,6 +12,6 @@
     <button onclick="goToUserPortal()">Applicant Portal</button>
     <button onclick="goToStaffPortal()">Loan Staff Portal</button>
 
-    <script src="{{ url_for('static', filename='nav.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/nav.js') }}"></script>
 </body>
 </html>

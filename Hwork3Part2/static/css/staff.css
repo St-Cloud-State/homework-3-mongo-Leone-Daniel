@@ -1,0 +1,91 @@
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+h1 {
+    padding: 1rem;
+    background-color: #263238;
+    color: white;
+    margin: 0;
+}
+
+#mainContainer {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+#viewApplicationsSection {
+    flex: 1;
+    padding: 1rem;
+    border-right: 2px solid #ccc;
+    background-color: #f8f9fa;
+    overflow-y: auto;
+}
+
+#viewApplicationsSection h2 {
+    margin-top: 0;
+}
+
+#applicationsList table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.5rem;
+}
+
+#applicationsList th,
+#applicationsList td {
+    border: 1px solid #ccc;
+    padding: 0.5rem;
+    text-align: left;
+}
+
+.selected-row {
+    background-color: #d0f0d0;
+    font-weight: bold;
+}
+
+#actionSections {
+    flex: 2;
+    padding: 1rem;
+    overflow-y: auto;
+}
+
+section {
+    margin-bottom: 2rem;
+}
+
+input[type="text"],
+textarea,
+select {
+    width: 100%;
+    margin-bottom: 0.5rem;
+    padding: 0.4rem;
+    box-sizing: border-box;
+}
+
+button {
+    padding: 0.5rem 1rem;
+    margin-top: 0.3rem;
+    margin-bottom: 0.5rem;
+    background-color: #1976d2;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #1565c0;
+}
+
+#rejectionReasonContainer {
+    margin-top: 0.5rem;
+}
+
+.bottomBar {
+    padding: 1rem;
+    background-color: #f1f1f1;
+    border-top: 1px solid #ccc;
+}
