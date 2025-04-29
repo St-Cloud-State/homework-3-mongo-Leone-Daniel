@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from db.db_methods import update_status_in_db, add_general_note, add_processing_note, add_acceptance_note
+from db.db_methods import *
 
 staff_routes = Blueprint('staff_routes', __name__)
 
@@ -53,3 +53,14 @@ def add_acceptance_note_route():
 
     result, code = add_acceptance_note(tracking_id, message)
     return jsonify(result), code
+
+@staff_routes.route('/applications', methods=['GET'])
+def get_applications():
+    applications = get_all_applications()
+    return jsonify(applications), 200
+
+@staff_routes.route('/delete_application/<tracking_id>', methods=['DELETE'])
+def delete_application(tracking_id):
+    result = delete_application_by_id(tracking_id)
+    return jsonify(result)
+

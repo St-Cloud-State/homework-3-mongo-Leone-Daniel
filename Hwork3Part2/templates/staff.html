@@ -64,6 +64,21 @@
         <div id="acceptanceNoteResult"></div>
     </section>
 
+    <!-- View All Applications -->
+    <section id="viewApplicationsSection">
+        <h2>View Applications</h2>
+        <button onclick="loadApplications()">Refresh List</button>
+        <div id="applicationsList"></div>
+    </section>
+
+    <!-- Delete Application -->
+    <section id="deleteApplicationSection">
+        <h2>Delete Application</h2>
+        <input type="text" id="deleteTrackingId" placeholder="Enter Tracking ID to delete"><br>
+        <button onclick="deleteApplication()">Delete</button>
+        <div id="deleteResult"></div>
+    </section>
+
     <button onclick="goHome()">Return to Home</button>
 
     <script src="{{ url_for('static', filename='nav.js') }}"></script>

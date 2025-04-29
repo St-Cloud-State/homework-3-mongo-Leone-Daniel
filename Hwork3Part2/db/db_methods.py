@@ -159,3 +159,20 @@ def add_processing_note(tracking_id, subphase, message, completed):
 
     return {"success": True, "message": f"Note added to {subphase}."}, 200
 
+def get_all_applications(limit=100):
+    cursor = applications.find({}, {
+        "_id": 0,  # Exclude internal Mongo ID
+        "tracking_id": 1,
+        "f_name": 1,
+        "l_name": 1,
+        "status": 1
+    }).limit(limit)
+
+    return list(cursor)
+
+def delete_application_by_id(tracking_id):
+    result = applications.delete_one({"tracking_id": tracking_id})
+
+    if result.deleted_count == 0:
+        return {"success": False, "message": "Application not found"}, 404
+    return {"success": True, "message": f"Application {tracking_id} deleted"}, 200

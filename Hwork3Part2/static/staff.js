@@ -151,3 +151,56 @@ function submitAcceptanceNote() {
         console.error('Error submitting acceptance note:', error);
     });
 }
+
+function loadApplications() {
+    fetch('/api/applications')
+        .then(response => response.json())
+        .then(data => {
+            const listDiv = document.getElementById('applicationsList');
+            if (data.length === 0) {
+                listDiv.innerHTML = "<p>No applications found.</p>";
+                return;
+            }
+
+            const rows = data.map(app => `
+                <tr>
+                    <td>${app.tracking_id}</td>
+                    <td>${app.f_name} ${app.l_name}</td>
+                    <td>${app.status}</td>
+                </tr>
+            `).join('');
+
+            listDiv.innerHTML = `
+                <table border="1">
+                    <thead>
+                        <tr><th>Tracking ID</th><th>Name</th><th>Status</th></tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            `;
+        })
+        .catch(error => {
+            console.error('Error loading applications:', error);
+        });
+}
+
+function deleteApplication() {
+    const trackingId = document.getElementById('deleteTrackingId').value;
+
+    fetch(`/api/delete_application/${trackingId}`, {
+        method: 'DELETE'
+    })
+    .then(response => response.json().then(data => ({ status: response.status, body: data })))
+    .then(({ status, body }) => {
+        const resultDiv = document.getElementById('deleteResult');
+        if (status === 200) {
+            resultDiv.innerHTML = `<span style="color:green;">${body.message}</span>`;
+            loadApplications();  // Refresh list
+        } else {
+            resultDiv.innerHTML = `<span style="color:red;">${body.message}</span>`;
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting application:', error);
+    });
+}
