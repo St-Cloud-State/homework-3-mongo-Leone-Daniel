@@ -1,3 +1,5 @@
+/* staff.css */
+
 body {
     font-family: sans-serif;
     margin: 0;
@@ -80,12 +82,19 @@ button:hover {
     background-color: #1565c0;
 }
 
-#rejectionReasonContainer {
-    margin-top: 0.5rem;
-}
-
 .bottomBar {
     padding: 1rem;
-    background-color: #f1f1f1;
-    border-top: 1px solid #ccc;
+}
+
+#updateStatusResult,
+#generalNoteResult,
+#processingNoteResult,
+#acceptanceNoteResult,
+#deleteResult {
+    margin-top: 0.5rem;
+    font-weight: bold;
+}
+
+#actionSections {
+    display: none; /* hidden initially */
 }

@@ -1,6 +1,11 @@
+document.addEventListener('DOMContentLoaded', toggleStatusSections);
+document.addEventListener('DOMContentLoaded', () => {
+    toggleStatusSections();      // Hide status-specific sections
+    loadApplications();          // Automatically load loan applications
+});
+
 let selectedTrackingId = null;
 
-// === Select and Display Applications ===
 function loadApplications() {
     fetch('/api/applications')
         .then(response => response.json())
@@ -37,103 +42,126 @@ function loadApplications() {
 function selectApplication(trackingId) {
     selectedTrackingId = trackingId;
     loadApplications();
+    document.getElementById('actionSections').style.display = 'block'; // show actions
 }
 
-// === Status Update ===
 function updateStatus() {
     const trackingId = selectedTrackingId;
     const newStatus = document.getElementById('newStatus').value;
-    const rejectionReason = document.getElementById('rejectionReason').value;
+    const rejectionReason = document.getElementById('rejectionReason')?.value;
+    const processingNote = document.getElementById('processingMessage')?.value;
+    const acceptanceNote = document.getElementById('acceptanceMessage')?.value;
 
     if (!trackingId) {
-        document.getElementById('updateStatusResult').innerHTML =
-            `<span style="color:red;">Please select an application first.</span>`;
+        showMessage('updateStatusResult', 'Please select an application first.', 'red');
         return;
     }
 
-    const updateData = {
-        tracking_id: trackingId,
-        new_status: newStatus
-    };
+    const updateData = { tracking_id: trackingId, new_status: newStatus };
 
     if (newStatus === 'rejected') {
-        if (!rejectionReason.trim()) {
-            document.getElementById('updateStatusResult').innerHTML =
-                `<span style="color:red;">❌ Rejection reason is required for rejection.</span>`;
+        if (!rejectionReason?.trim()) {
+            showMessage('updateStatusResult', '❌ Rejection reason is required.', 'red');
             return;
         }
-        updateData.rejection_reason = rejectionReason;
+        updateData.rejection_reason = rejectionReason; // pass rejection note
+    }
+
+    if (newStatus === 'accepted') {
+        if (!acceptanceNote?.trim()) {
+            showMessage('updateStatusResult', '❌ Acceptance note is required.', 'red');
+            return;
+        }
+        updateData.acceptance_note = acceptanceNote; // NEW: pass acceptance note
+    }
+
+    if (newStatus === 'processing') {
+        if (!processingNote?.trim()) {
+            showMessage('updateStatusResult', '❌ Processing note is required.', 'red');
+            return;
+        }
+        // processing note is still submitted separately
+        submitProcessingNote(true);
     }
 
     fetch('/api/update_status', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updateData)
     })
-    .then(response => response.json().then(data => ({ status: response.status, body: data })))
+    .then(res => res.json().then(data => ({ status: res.status, body: data })))
     .then(({ status, body }) => {
-        const resultDiv = document.getElementById('updateStatusResult');
-        resultDiv.innerHTML = `<span style="${status === 200 ? 'color:green' : 'color:red'};">${body.message}</span>`;
-    })
-    .catch(error => {
-        console.error('Error updating status:', error);
+        showMessage('updateStatusResult', body.message, status === 200 ? 'green' : 'red');
+        if (status === 200 && newStatus === 'accepted') {
+            document.getElementById('acceptanceMessage').value = ''; // clear acceptance note after successful submit
+        }
+        if (status === 200 && newStatus === 'rejected') {
+            document.getElementById('rejectionReason').value = ''; // clear rejection reason after successful submit
+        }
     });
 }
 
-// === Show/hide rejection reason ===
-function toggleRejectionReason() {
+
+function toggleStatusSections() {
     const status = document.getElementById('newStatus').value;
-    const container = document.getElementById('rejectionReasonContainer');
-    container.style.display = (status === 'rejected') ? 'block' : 'none';
+    document.getElementById('addProcessingNoteSection').style.display = (status === 'processing') ? 'block' : 'none';
+    document.getElementById('addAcceptanceNoteSection').style.display = (status === 'accepted') ? 'block' : 'none';
+    document.getElementById('addRejectionNoteSection').style.display = (status === 'rejected') ? 'block' : 'none';
+    clearStatusMessages();
 }
 
-// === General Note ===
+function showMessage(id, message, color) {
+    const el = document.getElementById(id);
+    if (el) {
+        el.innerHTML = `<span style="color:${color};">${message}</span>`;
+        setTimeout(() => el.innerHTML = '', 5000);
+    }
+}
+
+function clearStatusMessages() {
+    ['updateStatusResult', 'generalNoteResult', 'processingNoteResult', 'acceptanceNoteResult'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = '';
+    });
+}
+
 function submitGeneralNote() {
     const trackingId = selectedTrackingId;
     const message = document.getElementById('generalMessage').value;
 
     if (!trackingId) {
-        document.getElementById('generalNoteResult').innerHTML =
-            `<span style="color:red;">Please select an application first.</span>`;
+        showMessage('generalNoteResult', 'Please select an application first.', 'red');
         return;
     }
-
     if (!message.trim()) {
-        document.getElementById('generalNoteResult').innerHTML =
-            `<span style="color:red;">Message cannot be empty.</span>`;
+        showMessage('generalNoteResult', 'Message cannot be empty.', 'red');
         return;
     }
 
     fetch('/api/add_general_note', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tracking_id: trackingId, message: message })
+        body: JSON.stringify({ tracking_id: trackingId, message })
     })
     .then(res => res.json().then(data => ({ status: res.status, body: data })))
     .then(({ status, body }) => {
-        document.getElementById('generalNoteResult').innerHTML =
-            `<span style="${status === 200 ? 'color:green' : 'color:red'};">${body.message}</span>`;
+        showMessage('generalNoteResult', body.message, status === 200 ? 'green' : 'red');
+        if (status === 200) {
+            document.getElementById('generalMessage').value = '';
+        }
     });
 }
 
-// === Processing Note ===
-function submitProcessingNote() {
+function submitProcessingNote(fromStatusUpdate = false) {
     const trackingId = selectedTrackingId;
     const subphase = document.getElementById('processingSubphase').value;
     const message = document.getElementById('processingMessage').value;
     const completed = document.getElementById('processingCompleted').checked;
 
-    if (!trackingId) {
-        document.getElementById('processingNoteResult').innerHTML =
-            `<span style="color:red;">Please select an application first.</span>`;
-        return;
-    }
-
-    if (!message.trim()) {
-        document.getElementById('processingNoteResult').innerHTML =
-            `<span style="color:red;">Message cannot be empty.</span>`;
+    if (!trackingId || !message.trim()) {
+        if (!fromStatusUpdate) {
+            showMessage('processingNoteResult', 'Message cannot be empty or no application selected.', 'red');
+        }
         return;
     }
 
@@ -144,25 +172,24 @@ function submitProcessingNote() {
     })
     .then(res => res.json().then(data => ({ status: res.status, body: data })))
     .then(({ status, body }) => {
-        document.getElementById('processingNoteResult').innerHTML =
-            `<span style="${status === 200 ? 'color:green' : 'color:red'};">${body.message}</span>`;
+        if (!fromStatusUpdate) {
+            showMessage('processingNoteResult', body.message, status === 200 ? 'green' : 'red');
+        }
+        if (status === 200) {
+            document.getElementById('processingMessage').value = '';
+            document.getElementById('processingCompleted').checked = false;
+        }
     });
 }
 
-// === Acceptance Note ===
-function submitAcceptanceNote() {
+function submitAcceptanceNote(fromStatusUpdate = false) {
     const trackingId = selectedTrackingId;
     const message = document.getElementById('acceptanceMessage').value;
 
-    if (!trackingId) {
-        document.getElementById('acceptanceNoteResult').innerHTML =
-            `<span style="color:red;">Please select an application first.</span>`;
-        return;
-    }
-
-    if (!message.trim()) {
-        document.getElementById('acceptanceNoteResult').innerHTML =
-            `<span style="color:red;">Message cannot be empty.</span>`;
+    if (!trackingId || !message.trim()) {
+        if (!fromStatusUpdate) {
+            showMessage('acceptanceNoteResult', 'Message cannot be empty or no application selected.', 'red');
+        }
         return;
     }
 
@@ -173,20 +200,26 @@ function submitAcceptanceNote() {
     })
     .then(res => res.json().then(data => ({ status: res.status, body: data })))
     .then(({ status, body }) => {
-        document.getElementById('acceptanceNoteResult').innerHTML =
-            `<span style="${status === 200 ? 'color:green' : 'color:red'};">${body.message}</span>`;
-        if (status === 200) document.getElementById('acceptanceMessage').value = '';
+        if (!fromStatusUpdate) {
+            showMessage('acceptanceNoteResult', body.message, status === 200 ? 'green' : 'red');
+        }
+        if (status === 200) {
+            document.getElementById('acceptanceMessage').value = '';
+        }
     });
 }
 
-// === Delete Application ===
 function deleteApplication() {
     const trackingId = selectedTrackingId;
-
     if (!trackingId) {
-        document.getElementById('deleteResult').innerHTML =
-            `<span style="color:red;">Please select an application to delete.</span>`;
+        showMessage('deleteResult', 'Please select an application to delete.', 'red');
         return;
+    }
+
+    // Confirmation popup
+    const confirmDelete = confirm(`Are you sure you want to delete application ${trackingId}?`);
+    if (!confirmDelete) {
+        return; // If cancelled, do nothing
     }
 
     fetch(`/api/delete_application/${trackingId}`, {
@@ -194,11 +227,15 @@ function deleteApplication() {
     })
     .then(res => res.json().then(data => ({ status: res.status, body: data })))
     .then(({ status, body }) => {
-        document.getElementById('deleteResult').innerHTML =
-            `<span style="${status === 200 ? 'color:green' : 'color:red'};">${body.message}</span>`;
+        showMessage('deleteResult', body.message, status === 200 ? 'green' : 'red');
         if (status === 200) {
             selectedTrackingId = null;
             loadApplications();
+            hideActionSections();
         }
     });
+}
+
+function hideActionSections() {
+    document.getElementById('actionSections').style.display = 'none';
 }
