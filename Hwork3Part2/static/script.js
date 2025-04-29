@@ -197,3 +197,43 @@ function submitGeneralNote() {
         console.error('Error submitting general note:', error);
     });
 }
+
+function submitProcessingNote() {
+    const trackingId = document.getElementById('processingTrackingId').value;
+    const subphase = document.getElementById('processingSubphase').value;
+    const message = document.getElementById('processingMessage').value;
+    const completed = document.getElementById('processingCompleted').checked;
+
+    if (!message.trim()) {
+        document.getElementById('processingNoteResult').innerHTML =
+            `<span style="color:red;">Message cannot be empty.</span>`;
+        return;
+    }
+
+    fetch('/api/add_processing_note', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            tracking_id: trackingId,
+            subphase: subphase,
+            message: message,
+            completed: completed
+        })
+    })
+    .then(response => response.json().then(data => ({ status: response.status, body: data })))
+    .then(({ status, body }) => {
+        const resultDiv = document.getElementById('processingNoteResult');
+        if (status === 200) {
+            resultDiv.innerHTML = `<span style="color:green;">${body.message}</span>`;
+            document.getElementById('processingMessage').value = '';
+            document.getElementById('processingCompleted').checked = false;
+        } else {
+            resultDiv.innerHTML = `<span style="color:red;">${body.message}</span>`;
+        }
+    })
+    .catch(error => {
+        console.error('Error submitting processing note:', error);
+    });
+}

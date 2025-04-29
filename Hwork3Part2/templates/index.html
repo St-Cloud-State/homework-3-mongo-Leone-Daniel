@@ -70,6 +70,27 @@
         <div id="generalNoteResult"></div>
     </div>
 
+    <!-- Add Processing Note Section -->
+    <div id="addProcessingNote">
+        <h2>Add Processing Note</h2>
+        <input type="text" id="processingTrackingId" placeholder="Enter Tracking ID (e.g., app_00001)"><br>
+
+        <label for="processingSubphase">Select Subphase:</label>
+        <select id="processingSubphase">
+            <option value="personal_details_check">Personal Details Check</option>
+            <option value="credit_check">Credit Check</option>
+            <option value="certification_check">Certification Check</option>
+        </select><br>
+
+        <textarea id="processingMessage" placeholder="Enter processing task note"></textarea><br>
+
+        <label for="processingCompleted">Task Completed?</label>
+        <input type="checkbox" id="processingCompleted"><br>
+
+        <button onclick="submitProcessingNote()">Submit Processing Note</button>
+        <div id="processingNoteResult"></div>
+    </div>
+
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

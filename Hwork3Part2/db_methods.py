@@ -131,3 +131,31 @@ def add_general_note(tracking_id, message):
     )
 
     return {"success": True, "message": "General note added."}, 200
+
+def add_processing_note(tracking_id, subphase, message, completed):
+    valid_subphases = {"personal_details_check", "credit_check", "certification_check"}
+
+    if subphase not in valid_subphases:
+        return {"success": False, "message": f"Invalid subphase '{subphase}'."}, 400
+
+    if not message.strip():
+        return {"success": False, "message": "Message cannot be empty."}, 400
+
+    app = applications.find_one({"tracking_id": tracking_id})
+    if not app:
+        return {"success": False, "message": "Application not found."}, 404
+
+    task_entry = {
+        "task": message,
+        "message": message,
+        "completed": completed,
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+    result = applications.update_one(
+        {"tracking_id": tracking_id},
+        {"$push": {f"processing.{subphase}": task_entry}}
+    )
+
+    return {"success": True, "message": f"Note added to {subphase}."}, 200
+

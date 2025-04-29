@@ -54,3 +54,19 @@ def add_general_note_route():
 
     result, code = add_general_note(tracking_id, message)
     return jsonify(result), code
+
+from db_methods import add_processing_note
+
+@app.route('/api/add_processing_note', methods=['POST'])
+def add_processing_note_route():
+    data = request.get_json()
+    tracking_id = data.get("tracking_id")
+    subphase = data.get("subphase")
+    message = data.get("message")
+    completed = data.get("completed", False)
+
+    if not tracking_id or not subphase or not message:
+        return jsonify({"success": False, "message": "Tracking ID, subphase, and message required."}), 400
+
+    result, code = add_processing_note(tracking_id, subphase, message, completed)
+    return jsonify(result), code
