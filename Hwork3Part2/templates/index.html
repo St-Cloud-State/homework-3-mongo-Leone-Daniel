@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Loan Application System</title>
+</head>
+<body>
+    <h1>Loan Application Portal</h1>
+
+    <!-- New Application Form -->
+    <div id="newApplication">
+        <h2>Submit New Application</h2>
+        <input type="text" id="f_name" placeholder="First Name"><br>
+        <input type="text" id="l_name" placeholder="Last Name"><br>
+        <input type="text" id="address" placeholder="Address"><br>
+        <input type="text" id="city" placeholder="City"><br>
+        <input type="text" id="state" placeholder="State"><br>
+        <input type="text" id="zipcode" placeholder="Zipcode"><br>
+        <button onclick="submitApplication()">Submit Application</button>
+
+        <div id="applicationResult"></div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

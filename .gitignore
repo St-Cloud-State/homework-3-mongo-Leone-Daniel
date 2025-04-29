@@ -1,0 +1,42 @@
+# Byte-compiled / optimized / DLL Python files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Flask instance folder
+instance/
+
+# Pytest cache
+.pytest_cache/
+
+# VS Code / Codespaces settings
+.vscode/
+*.code-workspace
+
+# Environment files
+.env
+*.env
+
+# Virtual Environment folder
+venv/
+ENV/
+env/
+.venv/
+
+# Logs
+*.log
+
+# MongoDB data (if you ever accidentally put it in project folder)
+data/db/
+*.lock
+
+# macOS metadata files
+.DS_Store
+
+# Jupyter Notebook checkpoints (optional if you use notebooks)
+.ipynb_checkpoints/
+
+# General temporary files
+*.bak
+*.tmp
+*.swp
