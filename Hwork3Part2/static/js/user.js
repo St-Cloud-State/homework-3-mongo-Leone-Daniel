@@ -10,7 +10,7 @@ function submitApplication() {
     // Check if any field is empty
     if (!f_name || !l_name || !address || !city || !state || !zipcode) {
         document.getElementById('applicationResult').innerHTML =
-            `<span style="color:red;">❌ All fields are required.</span>`;
+            `<span style="color:red;">All fields are required.</span>`;
         return;
     }
 
@@ -31,7 +31,7 @@ function submitApplication() {
     .then(response => response.json())
     .then(data => {
         const resultDiv = document.getElementById('applicationResult');
-        resultDiv.innerHTML = `✅ Application submitted! Your tracking ID is: <b>${data.tracking_id}</b>`;
+        resultDiv.innerHTML = `Application submitted! Your tracking ID is: <b>${data.tracking_id}</b>`;
         clearApplicationForm();
     })
     .catch(error => {
@@ -50,12 +50,12 @@ function checkStatus() {
             const notesDiv = document.getElementById('notesResult');
 
             if (data.status === "not found") {
-                statusDiv.innerHTML = `<span style="color:red;">❌ Application not found.</span>`;
+                statusDiv.innerHTML = `<span style="color:red;">Application not found.</span>`;
                 notesDiv.innerHTML = "";
                 return;
             }
 
-            statusDiv.innerHTML = `✅ Current Status: <b>${data.status}</b>`;
+            statusDiv.innerHTML = `Current Status: <b>${data.status}</b>`;
 
             if (data.notes && data.notes.length > 0) {
                 const notesList = data.notes.map(note => `<li>${note}</li>`).join('');

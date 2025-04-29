@@ -8,12 +8,24 @@ def update_status():
     data = request.get_json()
     tracking_id = data.get("tracking_id")
     new_status = data.get("new_status")
+    acceptance_note = data.get("acceptance_note")
     rejection_reason = data.get("rejection_reason")
+    processing_note = data.get("processing_note")
+    subphase = data.get("subphase")
+    completed = data.get("completed", False)
 
     if not tracking_id or not new_status:
         return jsonify({"success": False, "message": "Missing tracking_id or new_status"}), 400
 
-    result, code = update_status_in_db(tracking_id, new_status, rejection_reason)
+    result, code = update_status_in_db(
+        tracking_id,
+        new_status,
+        rejection_reason=rejection_reason,
+        processing_note=processing_note,
+        subphase=subphase,
+        completed=completed,
+        acceptance_note=acceptance_note
+    )
     return jsonify(result), code
 
 @staff_routes.route('/add_general_note', methods=['POST'])
@@ -64,3 +76,36 @@ def delete_application(tracking_id):
     result = delete_application_by_id(tracking_id)
     return jsonify(result)
 
+@staff_routes.route('/application_history/<tracking_id>', methods=['GET'])
+def get_application_history(tracking_id):
+    app = applications.find_one({"tracking_id": tracking_id})
+    if not app:
+        return jsonify({"success": False, "message": "Application not found."}), 404
+
+    history = []
+
+    # General notes
+    for note in app.get('general_notes', []):
+        history.append(note)
+
+    # Acceptance notes
+    for note in app.get('acceptance_notes', []):
+        history.append(note)
+
+    # Processing notes (currently missing!)
+    for note in app.get('processing_notes', []):
+        history.append(note)
+
+    # App logs (internal status transitions)
+    for log in app.get('app_logs', []):
+        history.append(log)
+
+    # Sort history by embedded timestamps in string
+    def extract_timestamp(text):
+        import re
+        match = re.search(r'(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})', text)
+        return match.group(1) if match else ''
+
+    history_sorted = sorted(history, key=extract_timestamp)
+
+    return jsonify({"success": True, "history": history_sorted}), 200

@@ -13,6 +13,9 @@ function loadApplications() {
             const listDiv = document.getElementById('applicationsList');
             if (data.length === 0) {
                 listDiv.innerHTML = "<p>No applications found.</p>";
+                document.getElementById('selectedAppDisplay').textContent = 'None';
+                document.querySelector('button[onclick="viewApplicationHistory()"]').style.display = 'none';
+                document.getElementById('applicationHistory').innerHTML = '';
                 return;
             }
 
@@ -31,8 +34,21 @@ function loadApplications() {
                     </thead>
                     <tbody>${rows}</tbody>
                 </table>
-                <p><strong>Selected Application:</strong> <span id="selectedAppDisplay">${selectedTrackingId || 'None'}</span></p>
             `;
+
+            // Update the displayed selected application
+            document.getElementById('selectedAppDisplay').textContent = selectedTrackingId || 'None';
+
+            // Show or hide the View History button
+            const historyBtn = document.querySelector('button[onclick="viewApplicationHistory()"]');
+            if (historyBtn) {
+                historyBtn.style.display = selectedTrackingId ? 'inline-block' : 'none';
+            }
+
+            // Optionally clear history if no app is selected
+            if (!selectedTrackingId) {
+                document.getElementById('applicationHistory').innerHTML = '';
+            }
         })
         .catch(error => {
             console.error('Error loading applications:', error);
@@ -41,8 +57,31 @@ function loadApplications() {
 
 function selectApplication(trackingId) {
     selectedTrackingId = trackingId;
+    document.getElementById('actionSections').style.display = 'block';
     loadApplications();
-    document.getElementById('actionSections').style.display = 'block'; // show actions
+}
+
+function viewApplicationHistory() {
+    if (!selectedTrackingId) return;
+
+    fetch(`/api/application_history/${selectedTrackingId}`)
+        .then(response => response.json())
+        .then(data => {
+            const historyDiv = document.getElementById('applicationHistory');
+            if (!Array.isArray(data.history) || data.history.length === 0) {
+                historyDiv.innerHTML = "<p><em>No history available.</em></p>";
+                return;
+            }
+
+            const lines = data.history.map(entry => `<li>${entry}</li>`).join('');
+            historyDiv.innerHTML = `
+                <h3>Application History for <code>${selectedTrackingId}</code>:</h3>
+                <ul>${lines}</ul>
+            `;
+        })
+        .catch(error => {
+            console.error("Failed to fetch history:", error);
+        });
 }
 
 function updateStatus() {
@@ -61,28 +100,29 @@ function updateStatus() {
 
     if (newStatus === 'rejected') {
         if (!rejectionReason?.trim()) {
-            showMessage('updateStatusResult', '❌ Rejection reason is required.', 'red');
+            showMessage('updateStatusResult', 'Rejection reason is required.', 'red');
             return;
         }
-        updateData.rejection_reason = rejectionReason; // pass rejection note
+        updateData.rejection_reason = rejectionReason;
     }
 
     if (newStatus === 'accepted') {
         if (!acceptanceNote?.trim()) {
-            showMessage('updateStatusResult', '❌ Acceptance note is required.', 'red');
+            showMessage('updateStatusResult', 'Acceptance note is required.', 'red');
             return;
         }
-        updateData.acceptance_note = acceptanceNote; // NEW: pass acceptance note
+        updateData.acceptance_note = acceptanceNote;
     }
 
     if (newStatus === 'processing') {
         if (!processingNote?.trim()) {
-            showMessage('updateStatusResult', '❌ Processing note is required.', 'red');
+            showMessage('updateStatusResult', 'Processing note is required.', 'red');
             return;
         }
-        // processing note is still submitted separately
-        submitProcessingNote(true);
-    }
+        updateData.processing_note = processingNote;
+        updateData.subphase = document.getElementById('processingSubphase').value;
+        updateData.completed = document.getElementById('processingCompleted').checked;
+    }    
 
     fetch('/api/update_status', {
         method: 'POST',
@@ -92,15 +132,21 @@ function updateStatus() {
     .then(res => res.json().then(data => ({ status: res.status, body: data })))
     .then(({ status, body }) => {
         showMessage('updateStatusResult', body.message, status === 200 ? 'green' : 'red');
-        if (status === 200 && newStatus === 'accepted') {
-            document.getElementById('acceptanceMessage').value = ''; // clear acceptance note after successful submit
-        }
-        if (status === 200 && newStatus === 'rejected') {
-            document.getElementById('rejectionReason').value = ''; // clear rejection reason after successful submit
+
+        if (status === 200) {
+            if (newStatus === 'accepted') {
+                document.getElementById('acceptanceMessage').value = '';
+            }
+            if (newStatus === 'rejected') {
+                document.getElementById('rejectionReason').value = '';
+            }
+            if (newStatus === 'processing') {
+                document.getElementById('processingMessage').value = '';
+                document.getElementById('processingCompleted').checked = false;
+            }
         }
     });
 }
-
 
 function toggleStatusSections() {
     const status = document.getElementById('newStatus').value;
@@ -161,6 +207,8 @@ function submitProcessingNote(fromStatusUpdate = false) {
     if (!trackingId || !message.trim()) {
         if (!fromStatusUpdate) {
             showMessage('processingNoteResult', 'Message cannot be empty or no application selected.', 'red');
+        } else {
+            console.warn("Skipped empty processing note during status update.");
         }
         return;
     }
@@ -175,6 +223,7 @@ function submitProcessingNote(fromStatusUpdate = false) {
         if (!fromStatusUpdate) {
             showMessage('processingNoteResult', body.message, status === 200 ? 'green' : 'red');
         }
+
         if (status === 200) {
             document.getElementById('processingMessage').value = '';
             document.getElementById('processingCompleted').checked = false;

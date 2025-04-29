@@ -20,7 +20,7 @@ h1 {
 }
 
 #viewApplicationsSection {
-    flex: 1;
+    flex: 2;
     padding: 1rem;
     border-right: 2px solid #ccc;
     background-color: #f8f9fa;
@@ -50,7 +50,7 @@ h1 {
 }
 
 #actionSections {
-    flex: 2;
+    flex: 1;
     padding: 1rem;
     overflow-y: auto;
 }
@@ -97,4 +97,12 @@ button:hover {
 
 #actionSections {
     display: none; /* hidden initially */
+}
+
+#applicationHistory {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background-color: #f1f1f1;
+    border: 1px solid #ccc;
+    border-radius: 4px;
 }

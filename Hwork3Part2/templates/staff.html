@@ -12,8 +12,14 @@
         <!-- Left Panel: View Applications -->
         <section id="viewApplicationsSection">
             <h2>View Applications</h2>
-            <button onclick="loadApplications()">Refresh List</button>
             <div id="applicationsList"></div>
+            <button onclick="loadApplications()">Refresh List</button>
+
+            <!-- Add inside viewApplicationsSection -->
+            <p><strong>Selected Application:</strong> <span id="selectedAppDisplay">None</span></p>
+            <button onclick="viewApplicationHistory()" style="display: none;">View History</button>
+            <div id="applicationHistory"></div>
+
         </section>
 
         <!-- Right Panel: All actions -->
@@ -27,8 +33,6 @@
                     <option value="accepted">Accepted</option>
                     <option value="rejected">Rejected</option>
                 </select><br>
-                <button onclick="updateStatus()">Update Status</button>
-                <div id="updateStatusResult"></div>
             </section>
 
             <section id="addProcessingNoteSection" style="display: none;">
@@ -42,8 +46,6 @@
                 <textarea id="processingMessage" placeholder="Enter processing note"></textarea><br>
                 <label for="processingCompleted">Task Completed?</label>
                 <input type="checkbox" id="processingCompleted"><br>
-                <button onclick="submitProcessingNote()">Submit Processing Note</button>
-                <div id="processingNoteResult"></div>
             </section>
 
             <section id="addAcceptanceNoteSection" style="display: none;">
@@ -55,6 +57,9 @@
                 <h2>Rejection Reason</h2>
                 <input type="text" id="rejectionReason" placeholder="Enter reason for rejection"><br>
             </section>
+
+            <button onclick="updateStatus()">Update Status</button>
+            <div id="updateStatusResult"></div>
 
             <section id="addGeneralNoteSection">
                 <h2>Add General Note</h2>
