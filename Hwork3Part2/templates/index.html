@@ -30,6 +30,22 @@
         <div id="notesResult"></div>
     </div>
 
+    <!-- Update Application Status Section -->
+    <div id="updateStatus">
+        <h2>Update Application Status</h2>
+        <input type="text" id="updateTrackingId" placeholder="Enter Tracking ID (e.g., app_00001)"><br>
+        <label for="newStatus">New Status:</label>
+        <select id="newStatus">
+            <option value="received">Received</option>
+            <option value="processing">Processing</option>
+            <option value="accepted">Accepted</option>
+            <option value="rejected">Rejected</option>
+        </select>
+        <br>
+        <button onclick="updateStatus()">Update Status</button>
+        <div id="updateStatusResult"></div>
+    </div>
+
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

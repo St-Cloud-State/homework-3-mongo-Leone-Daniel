@@ -52,3 +52,18 @@ def check_status_in_db(tracking_id):
         "status": app['status'],
         "notes": notes
     }
+
+def update_status_in_db(tracking_id, new_status):
+    valid_statuses = {"received", "processing", "accepted", "rejected"}
+    if new_status not in valid_statuses:
+        return {"success": False, "message": f"Invalid status '{new_status}'"}, 400
+
+    result = applications.update_one(
+        {"tracking_id": tracking_id},
+        {"$set": {"status": new_status}}
+    )
+
+    if result.matched_count == 0:
+        return {"success": False, "message": "Application not found"}, 404
+
+    return {"success": True, "message": f"Status updated to {new_status}"}, 200
