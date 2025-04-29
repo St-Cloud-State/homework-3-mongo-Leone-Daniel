@@ -40,3 +40,32 @@ function submitApplication() {
         console.error('Error submitting application:', error);
     });
 }
+
+function checkStatus() {
+    const trackingId = document.getElementById('statusTrackingId').value;
+
+    fetch(`/api/check_status/${trackingId}`)
+        .then(response => response.json())
+        .then(data => {
+            const statusDiv = document.getElementById('statusResult');
+            const notesDiv = document.getElementById('notesResult');
+
+            if (data.status === "not found") {
+                statusDiv.innerHTML = `<span style="color:red;">❌ Application not found.</span>`;
+                notesDiv.innerHTML = "";
+                return;
+            }
+
+            statusDiv.innerHTML = `✅ Current Status: <b>${data.status}</b>`;
+
+            if (data.notes && data.notes.length > 0) {
+                const notesList = data.notes.map(note => `<li>${note}</li>`).join('');
+                notesDiv.innerHTML = `<h3>Notes</h3><ul>${notesList}</ul>`;
+            } else {
+                notesDiv.innerHTML = "<p>No notes available for this application.</p>";
+            }
+        })
+        .catch(error => {
+            console.error('Error checking status:', error);
+        });
+}

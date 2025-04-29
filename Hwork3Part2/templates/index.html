@@ -21,6 +21,15 @@
         <div id="applicationResult"></div>
     </div>
 
+    <!-- Check Application Status Section -->
+    <div id="checkStatus">
+        <h2>Check Application Status</h2>
+        <input type="text" id="statusTrackingId" placeholder="Enter Tracking ID (e.g., app_00001)">
+        <button onclick="checkStatus()">Check Status</button>
+        <div id="statusResult"></div>
+        <div id="notesResult"></div>
+    </div>
+
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
