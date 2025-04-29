@@ -42,3 +42,15 @@ def add_acceptance_note_route():
 
     result, code = add_acceptance_note(tracking_id, message)
     return jsonify(result), code
+
+@app.route('/api/add_general_note', methods=['POST'])
+def add_general_note_route():
+    data = request.get_json()
+    tracking_id = data.get("tracking_id")
+    message = data.get("message")
+
+    if not tracking_id or not message:
+        return jsonify({"success": False, "message": "Tracking ID and message required."}), 400
+
+    result, code = add_general_note(tracking_id, message)
+    return jsonify(result), code

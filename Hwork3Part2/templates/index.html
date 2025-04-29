@@ -61,6 +61,15 @@
         <div id="acceptanceNoteResult"></div>
     </div>
 
+    <!-- Add General Note Section -->
+    <div id="addGeneralNote">
+        <h2>Add General Note</h2>
+        <input type="text" id="generalTrackingId" placeholder="Enter Tracking ID (e.g., app_00001)"><br>
+        <textarea id="generalMessage" placeholder="Enter general note"></textarea><br>
+        <button onclick="submitGeneralNote()">Submit General Note</button>
+        <div id="generalNoteResult"></div>
+    </div>
+
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

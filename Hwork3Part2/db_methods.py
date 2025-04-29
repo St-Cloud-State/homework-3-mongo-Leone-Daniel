@@ -114,3 +114,20 @@ def add_acceptance_note(tracking_id, message):
     )
 
     return {"success": True, "message": "Acceptance note added."}, 200
+
+def add_general_note(tracking_id, message):
+    if not message.strip():
+        return {"success": False, "message": "Message cannot be empty."}, 400
+
+    app = applications.find_one({"tracking_id": tracking_id})
+    if not app:
+        return {"success": False, "message": "Application not found."}, 404
+
+    timestamped_message = f"{message} ({datetime.utcnow().isoformat()})"
+
+    result = applications.update_one(
+        {"tracking_id": tracking_id},
+        {"$push": {"general_notes": timestamped_message}}
+    )
+
+    return {"success": True, "message": "General note added."}, 200

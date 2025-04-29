@@ -162,3 +162,38 @@ function submitAcceptanceNote() {
         console.error('Error submitting acceptance note:', error);
     });
 }
+
+function submitGeneralNote() {
+    const trackingId = document.getElementById('generalTrackingId').value;
+    const message = document.getElementById('generalMessage').value;
+
+    if (!message.trim()) {
+        document.getElementById('generalNoteResult').innerHTML =
+            `<span style="color:red;">Message cannot be empty.</span>`;
+        return;
+    }
+
+    fetch('/api/add_general_note', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            tracking_id: trackingId,
+            message: message
+        })
+    })
+    .then(response => response.json().then(data => ({ status: response.status, body: data })))
+    .then(({ status, body }) => {
+        const resultDiv = document.getElementById('generalNoteResult');
+        if (status === 200) {
+            resultDiv.innerHTML = `<span style="color:green;">${body.message}</span>`;
+            document.getElementById('generalMessage').value = '';
+        } else {
+            resultDiv.innerHTML = `<span style="color:red;">${body.message}</span>`;
+        }
+    })
+    .catch(error => {
+        console.error('Error submitting general note:', error);
+    });
+}
