@@ -53,10 +53,12 @@ function checkStatus() {
             if (data.status === "not found") {
                 statusDiv.innerHTML = `<span style="color:red;">Application not found.</span>`;
                 notesDiv.innerHTML = "";
+                toggleAcceptanceNoteSection(""); // hide section
                 return;
             }
 
             statusDiv.innerHTML = `Current Status: <b>${data.status}</b>`;
+            toggleAcceptanceNoteSection(data.status); // only show if accepted
 
             if (data.notes && data.notes.length > 0) {
                 const notesList = data.notes.map(note => `<li>${note}</li>`).join('');
@@ -73,11 +75,21 @@ function checkStatus() {
 function updateStatus() {
     const trackingId = document.getElementById('updateTrackingId').value;
     const newStatus = document.getElementById('newStatus').value;
+    const rejectionReason = document.getElementById('rejectionReason').value;
 
     const updateData = {
         tracking_id: trackingId,
         new_status: newStatus
     };
+
+    if (newStatus === 'rejected') {
+        if (!rejectionReason.trim()) {
+            document.getElementById('updateStatusResult').innerHTML =
+                `<span style="color:red;">Rejection reason is required when rejecting an application.</span>`;
+            return;
+        }
+        updateData.rejection_reason = rejectionReason;
+    }
 
     fetch('/api/update_status', {
         method: 'POST',
@@ -97,5 +109,56 @@ function updateStatus() {
     })
     .catch(error => {
         console.error('Error updating status:', error);
+    });
+}
+
+function toggleRejectionReason() {
+    const status = document.getElementById('newStatus').value;
+    const container = document.getElementById('rejectionReasonContainer');
+    container.style.display = (status === 'rejected') ? 'block' : 'none';
+}
+
+function toggleAcceptanceNoteSection(status) {
+    const section = document.getElementById('addAcceptanceNote');
+    if (status === 'accepted') {
+        section.style.display = 'block';
+        document.getElementById('acceptanceTrackingId').value = document.getElementById('statusTrackingId').value;
+    } else {
+        section.style.display = 'none';
+    }
+}
+
+function submitAcceptanceNote() {
+    const trackingId = document.getElementById('acceptanceTrackingId').value;
+    const message = document.getElementById('acceptanceMessage').value;
+
+    if (!message.trim()) {
+        document.getElementById('acceptanceNoteResult').innerHTML =
+            `<span style="color:red;">Message cannot be empty.</span>`;
+        return;
+    }
+
+    fetch('/api/add_acceptance_note', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            tracking_id: trackingId,
+            message: message
+        })
+    })
+    .then(response => response.json().then(data => ({ status: response.status, body: data })))
+    .then(({ status, body }) => {
+        const resultDiv = document.getElementById('acceptanceNoteResult');
+        if (status === 200) {
+            resultDiv.innerHTML = `<span style="color:green;">${body.message}</span>`;
+            document.getElementById('acceptanceMessage').value = '';
+        } else {
+            resultDiv.innerHTML = `<span style="color:red;">${body.message}</span>`;
+        }
+    })
+    .catch(error => {
+        console.error('Error submitting acceptance note:', error);
     });
 }

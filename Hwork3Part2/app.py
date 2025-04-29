@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, render_template
-from db_methods import submit_application_to_db, check_status_in_db, update_status_in_db
+from db_methods import *
 
 app = Flask(__name__)
 
@@ -23,9 +23,22 @@ def update_status():
     data = request.get_json()
     tracking_id = data.get("tracking_id")
     new_status = data.get("new_status")
+    rejection_reason = data.get("rejection_reason")  # Optional
 
     if not tracking_id or not new_status:
         return jsonify({"success": False, "message": "Missing tracking_id or new_status"}), 400
 
-    result, status_code = update_status_in_db(tracking_id, new_status)
+    result, status_code = update_status_in_db(tracking_id, new_status, rejection_reason)
     return jsonify(result), status_code
+
+@app.route('/api/add_acceptance_note', methods=['POST'])
+def add_acceptance_note_route():
+    data = request.get_json()
+    tracking_id = data.get("tracking_id")
+    message = data.get("message")
+
+    if not tracking_id or not message:
+        return jsonify({"success": False, "message": "Tracking ID and message required."}), 400
+
+    result, code = add_acceptance_note(tracking_id, message)
+    return jsonify(result), code

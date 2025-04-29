@@ -34,16 +34,31 @@
     <div id="updateStatus">
         <h2>Update Application Status</h2>
         <input type="text" id="updateTrackingId" placeholder="Enter Tracking ID (e.g., app_00001)"><br>
+
         <label for="newStatus">New Status:</label>
-        <select id="newStatus">
+        <select id="newStatus" onchange="toggleRejectionReason()">
             <option value="received">Received</option>
             <option value="processing">Processing</option>
             <option value="accepted">Accepted</option>
             <option value="rejected">Rejected</option>
-        </select>
-        <br>
+        </select><br>
+
+        <div id="rejectionReasonContainer" style="display: none;">
+            <label for="rejectionReason">Rejection Reason:</label>
+            <input type="text" id="rejectionReason" placeholder="Enter reason for rejection"><br>
+        </div>
+
         <button onclick="updateStatus()">Update Status</button>
         <div id="updateStatusResult"></div>
+    </div>
+
+    <!-- Add Acceptance Note Section -->
+    <div id="addAcceptanceNote" style="display: none;">
+        <h2>Add Acceptance Note</h2>
+        <input type="text" id="acceptanceTrackingId" placeholder="Enter Tracking ID (e.g., app_00001)"><br>
+        <textarea id="acceptanceMessage" placeholder="Enter acceptance details (e.g., loan terms)"></textarea><br>
+        <button onclick="submitAcceptanceNote()">Submit Acceptance Note</button>
+        <div id="acceptanceNoteResult"></div>
     </div>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>

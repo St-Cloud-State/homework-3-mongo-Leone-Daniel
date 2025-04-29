@@ -63,7 +63,7 @@ def check_status_in_db(tracking_id):
         "notes": notes
     }
 
-def update_status_in_db(tracking_id, new_status):
+def update_status_in_db(tracking_id, new_status, rejection_reason=None):
     valid_statuses = {"received", "processing", "accepted", "rejected"}
     if new_status not in valid_statuses:
         return {"success": False, "message": f"Invalid status '{new_status}'"}, 400
@@ -71,10 +71,21 @@ def update_status_in_db(tracking_id, new_status):
     timestamp = datetime.utcnow().isoformat()
     note = f"Application updated to {new_status} at {timestamp}"
 
+    update_fields = {
+        "status": new_status
+    }
+
+    # Special case: rejected must have a reason
+    if new_status == "rejected":
+        if not rejection_reason:
+            return {"success": False, "message": "Rejection reason must be provided when rejecting an application."}, 400
+        update_fields["rejection_reason"] = rejection_reason
+
+    # Update status (and rejection reason if needed)
     result = applications.update_one(
         {"tracking_id": tracking_id},
         {
-            "$set": {"status": new_status},
+            "$set": update_fields,
             "$push": {"general_notes": note}
         }
     )
@@ -83,3 +94,23 @@ def update_status_in_db(tracking_id, new_status):
         return {"success": False, "message": "Application not found"}, 404
 
     return {"success": True, "message": f"Status updated to {new_status}"}, 200
+
+def add_acceptance_note(tracking_id, message):
+    if not message.strip():
+        return {"success": False, "message": "Message cannot be empty."}, 400
+
+    app = applications.find_one({"tracking_id": tracking_id})
+    if not app:
+        return {"success": False, "message": "Application not found."}, 404
+
+    if app["status"] != "accepted":
+        return {"success": False, "message": "Cannot add acceptance notes to a non-accepted application."}, 400
+
+    timestamped_message = f"{message} ({datetime.utcnow().isoformat()})"
+
+    result = applications.update_one(
+        {"tracking_id": tracking_id},
+        {"$push": {"acceptance_notes": timestamped_message}}
+    )
+
+    return {"success": True, "message": "Acceptance note added."}, 200
