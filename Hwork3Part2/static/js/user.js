@@ -58,8 +58,8 @@ function checkStatus() {
             statusDiv.innerHTML = `Current Status: <b>${data.status}</b>`;
 
             if (data.notes && data.notes.length > 0) {
-                const notesList = data.notes.map(note => `<li>${note}</li>`).join('');
-                notesDiv.innerHTML = `<h3>Notes</h3><ul>${notesList}</ul>`;
+                const notesList = data.notes.map(note => `<li>${note.replace(/\n/g, '<br>')}</li>`).join('');
+                notesDiv.innerHTML = `<h3>Notes</h3><ul>${notesList}</ul>`;            
             } else {
                 notesDiv.innerHTML = "<p>No notes available for this application.</p>";
             }

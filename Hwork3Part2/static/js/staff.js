@@ -73,7 +73,7 @@ function viewApplicationHistory() {
                 return;
             }
 
-            const lines = data.history.map(entry => `<li>${entry}</li>`).join('');
+            const lines = data.history.map(entry => `<li>${entry.replace(/\n/g, '<br>')}</li>`).join('');
             historyDiv.innerHTML = `
                 <h3>Application History for <code>${selectedTrackingId}</code>:</h3>
                 <ul>${lines}</ul>
