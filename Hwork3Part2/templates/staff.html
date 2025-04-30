@@ -50,7 +50,14 @@
 
             <section id="addAcceptanceNoteSection" style="display: none;">
                 <h2>Acceptance Note</h2>
-                <textarea id="acceptanceMessage" placeholder="Enter acceptance note"></textarea><br>
+                <input type="number" id="loanAmount" placeholder="Loan Amount ($)" /><br>
+                <input type="number" step="0.1" id="interestRate" placeholder="Interest Rate (%)" /><br>
+                <select id="loanType">
+                  <option value="Auto">Auto</option>
+                  <option value="Home">Home</option>
+                  <option value="Personal">Personal</option>
+                </select><br>
+                <textarea id="acceptanceMessage" placeholder="Enter acceptance note details"></textarea><br>                
             </section>
 
             <section id="addRejectionNoteSection" style="display: none;">

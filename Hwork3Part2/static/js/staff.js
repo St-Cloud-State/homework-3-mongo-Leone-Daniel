@@ -107,11 +107,22 @@ function updateStatus() {
     }
 
     if (newStatus === 'accepted') {
-        if (!acceptanceNote?.trim()) {
-            showMessage('updateStatusResult', 'Acceptance note is required.', 'red');
+        const loanAmount = document.getElementById('loanAmount').value;
+        const interestRate = document.getElementById('interestRate').value;
+        const loanType = document.getElementById('loanType').value;
+        const description = document.getElementById('acceptanceMessage').value;
+    
+        if (!loanAmount || !interestRate || !description.trim()) {
+            showMessage('updateStatusResult', 'All acceptance fields must be completed.', 'red');
             return;
         }
-        updateData.acceptance_note = acceptanceNote;
+    
+        updateData.acceptance_note = {
+            loan_amount: parseFloat(loanAmount),
+            interest_rate: parseFloat(interestRate),
+            loan_type: loanType,
+            description: description.trim()
+        };
     }
 
     if (newStatus === 'processing') {
@@ -135,6 +146,9 @@ function updateStatus() {
 
         if (status === 200) {
             if (newStatus === 'accepted') {
+                document.getElementById('loanAmount').value = '';
+                document.getElementById('interestRate').value = '';
+                document.getElementById('loanType').value = 'Auto';
                 document.getElementById('acceptanceMessage').value = '';
             }
             if (newStatus === 'rejected') {

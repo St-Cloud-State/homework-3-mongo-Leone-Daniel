@@ -40,7 +40,6 @@ def check_status_in_db(tracking_id):
     updated_at = app.get("status_updated_at", None)
     status_display = f"{status} at {updated_at}" if updated_at else status
 
-    # Log status check internally (not shown to user)
     timestamp = datetime.utcnow().isoformat()
     applications.update_one(
         {"tracking_id": tracking_id},
@@ -49,7 +48,6 @@ def check_status_in_db(tracking_id):
 
     notes = []
 
-    # Process processing_notes: keep most recent per subphase
     if status == "processing":
         latest_per_subphase = {}
         for note in app.get("processing_notes", []):
@@ -59,7 +57,6 @@ def check_status_in_db(tracking_id):
                 latest_per_subphase[subphase] = note
         notes.extend(latest_per_subphase.values())
 
-    # Show only most recent acceptance note
     elif status == "accepted":
         acceptance_notes = app.get("acceptance_notes", [])
         if acceptance_notes:
@@ -67,9 +64,7 @@ def check_status_in_db(tracking_id):
         else:
             notes.append("Your application has been accepted. Terms will be sent shortly.")
 
-    # Show only most recent rejection note
     elif status == "rejected":
-        # Show most recent rejection note (formatted + timestamped)
         rejection_notes = [
             note for note in app.get("general_notes", [])
             if note.startswith("REJECTION")
@@ -77,24 +72,22 @@ def check_status_in_db(tracking_id):
         if rejection_notes:
             notes.append(rejection_notes[-1])
         else:
-            # fallback if note not saved properly
             rejection_reason = app.get("rejection_reason", "No reason provided.")
             notes.append(f"Rejection: {rejection_reason}")
+
     return {
         "status": status_display,
         "notes": notes
     }
 
 def update_status_in_db(tracking_id, new_status, rejection_reason=None, processing_note=None, subphase=None, completed=False, acceptance_note=None):
-    from datetime import datetime
-
     valid_statuses = {"received", "processing", "accepted", "rejected"}
     if new_status not in valid_statuses:
         return {"success": False, "message": f"Invalid status '{new_status}'"}, 400
 
     timestamp = datetime.utcnow().isoformat()
 
-    # Validation checks
+    # Validation
     if new_status == "rejected" and (not rejection_reason or not rejection_reason.strip()):
         return {"success": False, "message": "Rejection reason must be provided."}, 400
 
@@ -104,14 +97,14 @@ def update_status_in_db(tracking_id, new_status, rejection_reason=None, processi
         if not subphase:
             return {"success": False, "message": "Processing subphase is required."}, 400
 
-    if new_status == "accepted" and (not acceptance_note or not acceptance_note.strip()):
-        return {"success": False, "message": "Acceptance note is required."}, 400
+    if new_status == "accepted":
+        if not isinstance(acceptance_note, dict) or not acceptance_note.get("description"):
+            return {"success": False, "message": "Complete acceptance details are required."}, 400
 
     status_label = new_status.upper()
     user_facing_note = f"{status_label}: Status updated at {timestamp}"
     internal_log = f"SYSTEM — Status changed to {new_status} at {timestamp}"
 
-    # Prepare update operations
     update_fields = {
         "status": new_status,
         "status_updated_at": timestamp
@@ -127,18 +120,26 @@ def update_status_in_db(tracking_id, new_status, rejection_reason=None, processi
         }
     }
 
-    # Handling rejected status
     if new_status == "rejected":
         update_fields["rejection_reason"] = rejection_reason
         rejection_note = f"REJECTION: {rejection_reason.strip()} ({timestamp})"
         update_ops["$push"]["general_notes"]["$each"].append(rejection_note)
 
-    # Handling accepted status
     if new_status == "accepted":
-        acceptance_entry = f"ACCEPTANCE: {acceptance_note.strip()} ({timestamp})"
-        update_ops["$push"]["acceptance_notes"] = acceptance_entry
+        loan_amount = acceptance_note.get("loan_amount")
+        interest_rate = acceptance_note.get("interest_rate")
+        loan_type = acceptance_note.get("loan_type")
+        description = acceptance_note.get("description")
 
-    # Handling processing status
+        formatted_note = (
+            f"ACCEPTANCE:\n"
+            f"• Loan Amount: ${loan_amount:,.2f}\n"
+            f"• Interest Rate: {interest_rate:.2f}%\n"
+            f"• Loan Type: {loan_type}\n"
+            f"• Description: {description.strip()} ({timestamp})"
+        )
+        update_ops["$push"]["acceptance_notes"] = formatted_note
+
     if new_status == "processing":
         task_status = "✔ COMPLETED" if completed else "IN-PROGRESS"
         processing_entry = f"PROCESSING — {subphase.replace('_', ' ').title()}: {processing_note.strip()} [{task_status}] ({timestamp})"
