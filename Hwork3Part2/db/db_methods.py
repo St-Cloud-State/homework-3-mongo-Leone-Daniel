@@ -49,13 +49,29 @@ def check_status_in_db(tracking_id):
     notes = []
 
     if status == "processing":
-        latest_per_subphase = {}
+        processing_list = []
         for note in app.get("processing_notes", []):
-            match = re.search(r'PROCESSING — (.*?):', note)
-            if match:
-                subphase = match.group(1).strip()
-                latest_per_subphase[subphase] = note
-        notes.extend(latest_per_subphase.values())
+            subphase = note.get("subphase", "General")
+            task = note.get("task", "N/A")
+            msg = note.get("message", "")
+            completed = note.get("completed", False)
+            bottleneck = note.get("bottleneck", False)
+            ts = note.get("timestamp")
+
+            # Allow notes even if subphase is missing; label it as General
+            note_display = (
+                f"PROCESSING — {subphase.replace('_', ' ').title()}\n"
+                f"• Task: {task}\n"
+                f"• Status: {'✔ COMPLETED' if completed else ('Bottleneck' if bottleneck else 'In Progress')}\n"
+                f"• Message: {msg}\n"
+                f"• Timestamp: {ts}"
+            )
+            processing_list.append(note_display)
+
+        if processing_list:
+            notes.extend(processing_list)
+        else:
+            notes.append("Processing has begun. Updates will be posted here as tasks are completed.")
 
     elif status == "accepted":
         acceptance_notes = app.get("acceptance_notes", [])
@@ -75,12 +91,14 @@ def check_status_in_db(tracking_id):
             rejection_reason = app.get("rejection_reason", "No reason provided.")
             notes.append(f"Rejection: {rejection_reason}")
 
+
+
     return {
         "status": status_display,
         "notes": notes
     }
 
-def update_status_in_db(tracking_id, new_status, rejection_reason=None, processing_note=None, subphase=None, completed=False, acceptance_note=None):
+def update_status_in_db(tracking_id, new_status, rejection_reason=None, processing_note=None, subphase=None, completed=False, acceptance_note=None, task=None):
     valid_statuses = {"received", "processing", "accepted", "rejected"}
     if new_status not in valid_statuses:
         return {"success": False, "message": f"Invalid status '{new_status}'"}, 400
@@ -141,8 +159,14 @@ def update_status_in_db(tracking_id, new_status, rejection_reason=None, processi
         update_ops["$push"]["acceptance_notes"] = formatted_note
 
     if new_status == "processing":
-        task_status = "✔ COMPLETED" if completed else "IN-PROGRESS"
-        processing_entry = f"PROCESSING — {subphase.replace('_', ' ').title()}: {processing_note.strip()} [{task_status}] ({timestamp})"
+        processing_entry = {
+            "subphase": subphase,
+            "task": task or "System Updated",
+            "message": processing_note.strip(),
+            "completed": completed,
+            "bottleneck": False,
+            "timestamp": timestamp
+        }
         update_ops["$push"]["processing_notes"] = processing_entry
 
     result = applications.update_one({"tracking_id": tracking_id}, update_ops)
@@ -170,13 +194,19 @@ def add_general_note(tracking_id, message):
     )
     return {"success": True, "message": "General note added."}, 200
 
-def add_processing_note(tracking_id, subphase, message, completed):
+def add_processing_note(tracking_id, subphase, task, message, completed, bottleneck):
     timestamp = datetime.utcnow().isoformat()
-    status = "✔ COMPLETED" if completed else "IN-PROGRESS"
-    note = f"PROCESSING — {subphase.replace('_', ' ').title()}: {message.strip()} [{status}] ({timestamp})"
+    entry = {
+        "subphase": subphase,
+        "task": task,
+        "message": message.strip(),
+        "completed": completed,
+        "bottleneck": bottleneck,
+        "timestamp": timestamp
+    }
     result = applications.update_one(
         {"tracking_id": tracking_id},
-        {"$push": {"processing_notes": note}}
+        {"$push": {"processing_notes": entry}}
     )
     return {"success": True, "message": "Processing note added."}, 200
 

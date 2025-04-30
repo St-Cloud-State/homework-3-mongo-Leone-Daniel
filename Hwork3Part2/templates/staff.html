@@ -37,16 +37,19 @@
 
             <section id="addProcessingNoteSection" style="display: none;">
                 <h2>Add Processing Note</h2>
-                <label for="processingSubphase">Select Subphase:</label>
+                <label for="processingSubphase">Subphase:</label>
                 <select id="processingSubphase">
                     <option value="personal_details_check">Personal Details Check</option>
                     <option value="credit_check">Credit Check</option>
                     <option value="certification_check">Certification Check</option>
                 </select><br>
-                <textarea id="processingMessage" placeholder="Enter processing note"></textarea><br>
-                <label for="processingCompleted">Task Completed?</label>
-                <input type="checkbox" id="processingCompleted"><br>
-            </section>
+            
+                <input type="text" id="processingTask" placeholder="Enter task description"><br>
+                <textarea id="processingMessage" placeholder="Enter task message"></textarea><br>
+            
+                <label><input type="checkbox" id="processingCompleted"> Task Completed</label><br>
+                <label><input type="checkbox" id="processingBottleneck"> Bottleneck</label><br>
+            </section>            
 
             <section id="addAcceptanceNoteSection" style="display: none;">
                 <h2>Acceptance Note</h2>

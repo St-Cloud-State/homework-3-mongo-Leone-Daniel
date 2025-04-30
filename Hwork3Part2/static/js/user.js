@@ -58,11 +58,17 @@ function checkStatus() {
             statusDiv.innerHTML = `Current Status: <b>${data.status}</b>`;
 
             if (data.notes && data.notes.length > 0) {
-                const notesList = data.notes.map(note => `<li>${note.replace(/\n/g, '<br>')}</li>`).join('');
-                notesDiv.innerHTML = `<h3>Notes</h3><ul>${notesList}</ul>`;            
-            } else {
-                notesDiv.innerHTML = "<p>No notes available for this application.</p>";
-            }
+                const notesList = data.notes
+                    .filter(note => typeof note === 'string' && note.trim().length > 0)
+                    .map(note => `<li>${note.replace(/\n/g, '<br>')}</li>`)
+                    .join('');
+                
+                if (notesList.length > 0) {
+                    notesDiv.innerHTML = `<h3>Notes</h3><ul>${notesList}</ul>`;
+                } else {
+                    notesDiv.innerHTML = "<p>No valid notes available for this application.</p>";
+                }
+            }            
         })
         .catch(error => {
             console.error('Error checking status:', error);

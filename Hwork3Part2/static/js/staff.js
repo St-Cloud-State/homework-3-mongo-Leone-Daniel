@@ -132,6 +132,7 @@ function updateStatus() {
         }
         updateData.processing_note = processingNote;
         updateData.subphase = document.getElementById('processingSubphase').value;
+        updateData.task = document.getElementById('processingTask').value;
         updateData.completed = document.getElementById('processingCompleted').checked;
     }    
 
@@ -215,14 +216,16 @@ function submitGeneralNote() {
 function submitProcessingNote(fromStatusUpdate = false) {
     const trackingId = selectedTrackingId;
     const subphase = document.getElementById('processingSubphase').value;
+    const task = document.getElementById('processingTask').value;
     const message = document.getElementById('processingMessage').value;
     const completed = document.getElementById('processingCompleted').checked;
+    const bottleneck = document.getElementById('processingBottleneck').checked;
 
-    if (!trackingId || !message.trim()) {
+    if (!trackingId || !subphase || !task || !message.trim()) {
         if (!fromStatusUpdate) {
-            showMessage('processingNoteResult', 'Message cannot be empty or no application selected.', 'red');
+            showMessage('processingNoteResult', 'All fields are required.', 'red');
         } else {
-            console.warn("Skipped empty processing note during status update.");
+            console.warn("Incomplete processing note skipped during status update.");
         }
         return;
     }
@@ -230,7 +233,14 @@ function submitProcessingNote(fromStatusUpdate = false) {
     fetch('/api/add_processing_note', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tracking_id: trackingId, subphase, message, completed })
+        body: JSON.stringify({
+            tracking_id: trackingId,
+            subphase,
+            task,
+            message,
+            completed,
+            bottleneck
+        })
     })
     .then(res => res.json().then(data => ({ status: res.status, body: data })))
     .then(({ status, body }) => {
@@ -239,8 +249,10 @@ function submitProcessingNote(fromStatusUpdate = false) {
         }
 
         if (status === 200) {
+            document.getElementById('processingTask').value = '';
             document.getElementById('processingMessage').value = '';
             document.getElementById('processingCompleted').checked = false;
+            document.getElementById('processingBottleneck').checked = false;
         }
     });
 }

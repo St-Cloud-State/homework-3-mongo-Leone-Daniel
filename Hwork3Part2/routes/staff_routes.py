@@ -13,6 +13,7 @@ def update_status():
     processing_note = data.get("processing_note")
     subphase = data.get("subphase")
     completed = data.get("completed", False)
+    task = data.get("task")
 
     if not tracking_id or not new_status:
         return jsonify({"success": False, "message": "Missing tracking_id or new_status"}), 400
@@ -24,7 +25,8 @@ def update_status():
         processing_note=processing_note,
         subphase=subphase,
         completed=completed,
-        acceptance_note=acceptance_note
+        acceptance_note=acceptance_note,
+        task=task
     )
     return jsonify(result), code
 
@@ -45,13 +47,20 @@ def add_processing_note_route():
     data = request.get_json()
     tracking_id = data.get("tracking_id")
     subphase = data.get("subphase")
+    task = data.get("task")
     message = data.get("message")
     completed = data.get("completed", False)
+    bottleneck = data.get("bottleneck", False)
 
-    if not tracking_id or not subphase or not message:
-        return jsonify({"success": False, "message": "Tracking ID, subphase, and message required."}), 400
+    if not tracking_id or not subphase or not task or not message:
+        return jsonify({
+            "success": False,
+            "message": "Tracking ID, subphase, task, and message are required."
+        }), 400
 
-    result, code = add_processing_note(tracking_id, subphase, message, completed)
+    result, code = add_processing_note(
+        tracking_id, subphase, task, message, completed, bottleneck
+    )
     return jsonify(result), code
 
 @staff_routes.route('/add_acceptance_note', methods=['POST'])
@@ -92,9 +101,21 @@ def get_application_history(tracking_id):
     for note in app.get('acceptance_notes', []):
         history.append(note)
 
-    # Processing notes (currently missing!)
+    # Processing notes (formatted if structured)
     for note in app.get('processing_notes', []):
-        history.append(note)
+        if isinstance(note, dict):
+            status_str = "COMPLETED" if note.get("completed") else (
+                "Bottleneck" if note.get("bottleneck") else "In Progress"
+            )
+            history.append(
+                f"PROCESSING — {note.get('subphase', '').replace('_', ' ').title()}\n"
+                f"• Task: {note.get('task')}\n"
+                f"• Status: {status_str}\n"
+                f"• Message: {note.get('message')}\n"
+                f"• Timestamp: {note.get('timestamp')}"
+            )
+        else:
+            history.append(note)
 
     # App logs (internal status transitions)
     for log in app.get('app_logs', []):
